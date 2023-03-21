@@ -62,46 +62,56 @@ if len(sys.argv) > 2:
     nbre_repet   = int(sys.argv[2])
 
 enveloppe = None
-nuage     = None
-
+nuage =None
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
-size = comm. Get_size()
+size = comm.Get_size()
 
-
+local_taille_nuage = taille_nuage//size
 
 for r in range(nbre_repet):
     t1 = time.time()
-    nuage = np.array(np.array([[resolution_x * i * math.cos(48371.*i)/taille_nuage for i in range(taille_nuage)], [resolution_y * math.sin(50033./(i+1.)) for i in range(taille_nuage)]], dtype=np.float64).T)
+    local_nuage = np.array(np.array([[resolution_x * i * math.cos(48371.*i)/local_taille_nuage for i in range(rank*local_taille_nuage,(rank+1)*local_taille_nuage)], [resolution_y * math.sin(50033./(i+1.)) for i in range(rank*local_taille_nuage, (rank+1)*local_taille_nuage)]], dtype=np.float64).T)
     t2 = time.time()
     elapsed_generation += t2 - t1
 
     # Calcul de l'enveloppe convexe :
     t1 = time.time()
-    enveloppe = calcul_enveloppe(nuage)
+    local_enveloppe = calcul_enveloppe(local_nuage)
     t2 = time.time()
     elapsed_convexhull += t2 - t1
 
-print(f"Temps pris pour la generation d'un nuage de points : {elapsed_generation/nbre_repet}")
-print(f"Temps pris pour le calcul de l'enveloppe convexe : {elapsed_convexhull/nbre_repet}")
-print(f"Temps total : {sum((elapsed_generation, elapsed_convexhull))/nbre_repet}")
+local_enveloppe.tolist()
+nuage = []
+comm.Gather(local_enveloppe,nuage,root=0)
+print("\n L'erreur ne vient pas du processus",rank,"\n")
+
+if rank == 0 :
+    enveloppe = calcul_enveloppe(nuage)
+
+    print(f"Temps pris pour la generation d'un nuage de points : {elapsed_generation/nbre_repet}")
+    print(f"Temps pris pour le calcul de l'enveloppe convexe : {elapsed_convexhull/nbre_repet}")
+    print(f"Temps total : {sum((elapsed_generation, elapsed_convexhull))/nbre_repet}")
 
 
 
 # affichage du nuage :
-plt.scatter(nuage[:,0], nuage[:,1])
-for i in range(len(enveloppe[:])-1):
-    plt.plot([enveloppe[i,0],enveloppe[i+1,0]], [enveloppe[i,1], enveloppe[i+1,1]], 'bo', linestyle="-")
-plt.show()
+    plt.scatter(nuage[:,0], nuage[:,1])
+    for i in range(len(enveloppe[:])-1):
+        plt.plot([enveloppe[i,0],enveloppe[i+1,0]], [enveloppe[i,1], enveloppe[i+1,1]], 'bo', linestyle="-")
+    plt.show()
 
 
 
 # validation de non-regression :
-if (taille_nuage == 55440):
-    ref = np.loadtxt("enveloppe_convexe_55440.ref")
-    try:
-        np.testing.assert_allclose(ref, enveloppe)
-        print("Verification pour 55440 points: OK")
-    except AssertionError as e:
-        print(e)
-        print("Verification pour 55440 points: FAILED")
+    if (taille_nuage == 55440):
+        ref = np.loadtxt("enveloppe_convexe_55440.ref")
+        try:
+            np.testing.assert_allclose(ref, enveloppe)
+            print("Verification pour 55440 points: OK")
+        except AssertionError as e:
+            print(e)
+            print("Verification pour 55440 points: FAILED")
+    else :
+        print("Pas d'erreur ici non plus")
+MPI.Finalize

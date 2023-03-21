@@ -6,12 +6,9 @@ Pour ce qui est des caches L2 et L3, ils sont de 1.5MiB et 12MiB respectivement.
 ## Automate cellulaire 1D
 
 Pour paralléliser le code, j'ai décidé d'appliquer la stratégie des buckets afni de répartir le calcul de manière égale sur tous mes processus.
-Ainsi, je divise le nombre de configurations à tester par le nombre de processus, et je demande à chaque processus de rang k de traiter les
-configurations k* (n_config/n_processus) à (k+1) * (n_config/n_processus) -1.
+Ainsi, je divise le nombre de configurations à tester par le nombre de processus, et je demande à chaque processus de rang k de traiter les configurations k* (n_config/n_processus) à (k+1) * (n_config/n_processus) -1.
 
-Alors, pour mesurer la vitesse d'exécution de mon programme, sur chaque processus je mesure localement le temps de computation et de display, 
-puis je reduce dans le processus de rang 0 avec pour opération MPI.MAX car c'est le processus le plus lent qui donne le temps d'exécution total
-du programme.
+Alors, pour mesurer la vitesse d'exécution de mon programme, sur chaque processus je mesure localement le temps de computation et de display, puis je reduce dans le processus de rang 0 avec pour opération MPI.MAX car c'est le processus le plus lent qui donne le temps d'exécution total du programme.
 
 Résultats de test pour save_as_md activé et save_as_png désactivé : 
 
@@ -24,3 +21,7 @@ Résultats de test pour save_as_md activé et save_as_png désactivé :
 ![Temps d'affichage en fonction du nombre de processus](Affichage_process.png)
 
 
+## Enveloppe convexe - algorithme de Graham
+
+Dans cette partie, pour paralléliser j'ai tenté de diviser le nombre de points entre les différents processus, afin que chacun détermine l'enveloppe sur son nuage, pour ensuite tout gather sur le processus de rang 0 qui n'aurait plus qu'à faire l'enveloppe des points faisant l'enveloppe des sous_nuages. 
+Je n'ai malheureusement pas encore eu le temps de trouver pourquoi mon gather générait une erreur de type "TypeError: message: expecting buffer or list/tuple" et ce malgré toutes mes tentatives de transformations de type.
