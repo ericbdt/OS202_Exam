@@ -15,9 +15,9 @@ du programme.
 
 Résultats de test pour save_as_md activé et save_as_png désactivé : 
 
-Coeurs                      |   1  |   2   |  3   |   4   |   5   |  6   |
-Temps de calcul  (en s)     |  1.2 | 0.66  | 0.55 | 0.49  | 0.39  | 0.33 |
-Temps de génération (en s)  | 18.3 | 9.46  | 8.01 | 7.80  | 5.92  | 5.22 |
+|Coeurs                      |   1  |   2   |  3   |   4   |   5   |  6   |
+|Temps de calcul  (en s)     |  1.2 | 0.66  | 0.55 | 0.49  | 0.39  | 0.33 |
+|Temps de génération (en s)  | 18.3 | 9.46  | 8.01 | 7.80  | 5.92  | 5.22 |
 
 ![Temps de calcul en fonction du nombre de processus](Calcul_process.png)
 ![Temps d'affichage en fonction du nombre de processus](Affichage_process.png)
